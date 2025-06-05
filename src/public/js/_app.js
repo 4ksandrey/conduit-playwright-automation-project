@@ -58,6 +58,7 @@ import Article from "@/routes/Article.vue";
 import ArticleEdit from "@/routes/ArticleEdit.vue";
 import NotFound from "@/routes/404.vue";
 import ResetPassword from "@/routes/ResetPassword.vue";
+import ForgotPassword from "@/routes/ForgotPassword.vue";
 
 const router = new VueRouter({
   routes: [
@@ -96,6 +97,11 @@ const router = new VueRouter({
       name: "reset-password",
       path: "/reset-password",
       component: ResetPassword,
+    },
+    {
+      name: "forgot-password",
+      path: "/forgot-password",
+      component: ForgotPassword,
     },
     {
       name: "settings",
@@ -164,7 +170,13 @@ router.beforeEach(async (to, from, next) => {
 });
 */
 router.beforeEach(async (to, from, next) => {
-  const publicPaths = ["/login", "/register", "/", "/reset-password"];
+  const publicPaths = [
+    "/login",
+    "/register",
+    "/",
+    "/forgot-password",
+    "/reset-password",
+  ];
   if (!publicPaths.includes(to.path)) {
     const result = await store.dispatch("checkIfUserIsAuthenticated");
     if (!result) {

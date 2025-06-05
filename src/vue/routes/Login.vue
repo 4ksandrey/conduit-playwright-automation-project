@@ -30,7 +30,7 @@
               />
             </fieldset>
             <p class="text-xs-center">
-              <router-link :to="{ name: 'reset-password' }">
+              <router-link :to="{ name: 'forgot-password' }">
                 Forgot your password?
               </router-link>
             </p>

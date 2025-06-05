@@ -115,7 +115,7 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      vm.email = "";
+      vm.email = to.query.email || ""; // Префил email, если передан
       vm.password = "";
       vm.confirmPassword = "";
       vm.localError = "";

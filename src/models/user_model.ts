@@ -92,6 +92,18 @@ export class UserModel extends BaseModel {
    */
   public username: string;
 
+  /**
+ * @var string | null
+ * Токен для скидання паролю
+ */
+  public resetPasswordToken: string | null = null;
+
+  /**
+  * @var Date | null
+  * Дата і час завершення дії токена
+  */
+  public resetPasswordExpires: Date | null = null;
+
   //////////////////////////////////////////////////////////////////////////////
   // FILE MARKER - CONSTRCUTOR /////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
@@ -105,21 +117,26 @@ export class UserModel extends BaseModel {
    * @param number id=-1
    */
   constructor(
-    username: string,
-    password: string,
-    email: string,
-    bio: string = "",
-    image: string = "https://static.productionready.io/images/smiley-cyrus.jpg",
-    id: number = -1,
-  ) {
-    super();
-    this.id = id;
-    this.username = username;
-    this.password = password;
-    this.email = email;
-    this.bio = bio;
-    this.image = image;
-  }
+  username: string,
+  password: string,
+  email: string,
+  bio: string = "",
+  image: string = "https://static.productionready.io/images/smiley-cyrus.jpg",
+  id: number = -1,
+  resetPasswordToken: string | null = null,
+  resetPasswordExpires: Date | null = null,
+) {
+  super();
+  this.id = id;
+  this.username = username;
+  this.password = password;
+  this.email = email;
+  this.bio = bio;
+  this.image = image;
+  this.resetPasswordToken = resetPasswordToken;
+  this.resetPasswordExpires = resetPasswordExpires;
+}
+
 
   //////////////////////////////////////////////////////////////////////////////
   // FILE MARKER - METHODS - CRUD //////////////////////////////////////////////

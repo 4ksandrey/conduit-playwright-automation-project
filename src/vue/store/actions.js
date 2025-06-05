@@ -449,6 +449,25 @@ export default {
         });
     });
   },
+
+  requestPasswordReset(context, payload) {
+    return new Promise((resolve, reject) => {
+      axios
+        .post("/user/forgot-password", payload)
+        .then((response) => {
+          console.log("Password reset email sent.");
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error("Password reset request failed.");
+          reject(
+            (error.response && error.response.data) || {
+              message: "Unknown error",
+            }
+          );
+        });
+    });
+  },
 };
 
 function getCookie(cname) {

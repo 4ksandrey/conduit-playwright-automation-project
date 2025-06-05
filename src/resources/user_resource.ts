@@ -7,6 +7,7 @@ export default class UserResource extends BaseResource {
   static paths = [
     "/user",
     "/user/:username",
+    "/user/forgot-password",
   ];
 
   /**
@@ -31,25 +32,31 @@ export default class UserResource extends BaseResource {
 
   /**
    * @description
-   * Handle a POST request with the following accepted request body params:
-   *     {
-   *       username: string,
-   *       email: string,
-   *       bio?: string,
-   *       password? string
-   *     }
-   *
-   * @return Drash.Http.Response
-   *     - If any input fails validation, then we return a 422 response.
-   *     - If the database fails to update the user in question, then we return
-   *       a 500 response.
-   *     - If all is successful, then we return a 200 response with the User
-   *       object with its fields updated.
+   * Handle a POST request.
    */
+public async POST() {
+  const url = this.request.url;
+
+  if (url.endsWith("/forgot-password")) {
+    const email = this.request.getBodyParam("email");
+
+    if (!email || typeof email !== "string" || !ValidationService.isEmail(email)) {
+      return this.errorResponse(422, "Valid email required.");
+    }
+
+    this.response.body = {
+      message: "If your email is registered, we’ll send you reset instructions.",
+    };
+    return this.response;
+  }
+
+  return this.errorResponse(400, "Unknown POST route.");
+}
+
   public async PUT() {
     console.log("Handling UserResource PUT.");
 
-    // Gather data
+    // Собираем данные из тела запроса
     const id = (this.request.getBodyParam("id") as string | number) || "";
     const username = ValidationService.decodeInput(
       (this.request.getBodyParam("username") as string) || "",
@@ -77,7 +84,7 @@ export default class UserResource extends BaseResource {
 
     const user = result[0];
 
-    // Validate
+    // Валидация
     console.log("Validating inputs.");
     if (!username) {
       return this.errorResponse(422, "Username field required.");
@@ -102,7 +109,7 @@ export default class UserResource extends BaseResource {
     if (!ValidationService.isEmail(email)) {
       return this.errorResponse(422, "Email must be a valid email.");
     }
-    if (email != user.email) {
+    if (email !== user.email) {
       if (!(await ValidationService.isEmailUnique(email))) {
         return this.errorResponse(422, "Email is already taken.");
       }
@@ -122,7 +129,7 @@ export default class UserResource extends BaseResource {
     user.image = image;
     user.email = email;
     if (rawPassword) {
-      user.password = await bcrypt.hash(rawPassword); // HASH THE PASSWORD
+      user.password = await bcrypt.hash(rawPassword); // Хешируем пароль
     }
     const savedUser = await user.save();
     if (savedUser === null) {
@@ -133,7 +140,7 @@ export default class UserResource extends BaseResource {
     }
 
     const entity = savedUser.toEntity();
-    // Make sure to pass the user's session token back to them
+    // Возвращаем токен сессии пользователя
     entity.token = token;
 
     this.response.body = {
