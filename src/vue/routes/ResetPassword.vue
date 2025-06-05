@@ -66,6 +66,14 @@ export default {
       localError: ""
     };
   },
+  created() {
+    const savedEmail = sessionStorage.getItem("reset_email");
+    if (savedEmail) {
+      this.email = savedEmail;
+    } else {
+      this.$router.push({ name: 'forgot-password' });
+    }
+  },
   computed: {
     ...mapGetters(["errors"])
   },
@@ -112,14 +120,6 @@ export default {
         });
       }
     }
-  },
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      vm.email = to.query.email || ""; // Префил email, если передан
-      vm.password = "";
-      vm.confirmPassword = "";
-      vm.localError = "";
-    });
   }
 };
 </script>

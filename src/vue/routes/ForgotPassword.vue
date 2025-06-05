@@ -24,7 +24,7 @@
             </fieldset>
 
             <button class="btn btn-lg btn-primary pull-xs-right">
-              Send Reset Code
+              Send Reset Link
             </button>
 
             <div v-if="successMessage" class="success-message mt-3">
@@ -73,9 +73,11 @@ export default {
           return;
         }
 
+        // Генерируем 6-значный код
         const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
         this.generatedCode = generatedCode;
 
+        // Строим HTML-контент модалки
         const wrapper = document.createElement("div");
 
         const codeText = document.createElement("p");
@@ -86,6 +88,7 @@ export default {
         input.setAttribute("placeholder", "Enter code");
         input.setAttribute("type", "text");
         input.className = "swal-content__input";
+        input.required = true;
 
         wrapper.appendChild(codeText);
         wrapper.appendChild(input);
@@ -100,11 +103,22 @@ export default {
 
         const enteredCode = input.value.trim();
 
+        if (!enteredCode) {
+          this.localError = "Code is required.";
+          return;
+        }
+
         if (enteredCode === this.generatedCode) {
           await swal("Success!", "Redirecting to reset page...", "success");
-          const emailToRedirect = this.email;
+
+          // Сохраняем email в sessionStorage
+          sessionStorage.setItem("reset_email", this.email);
+
+          // Переход без query
+          this.$router.push({ name: "reset-password" });
+
+          // Очищаем email после редиректа
           this.email = "";
-          this.$router.push({ name: "reset-password", query: { email: emailToRedirect } });
         } else {
           this.localError = "Invalid code. Try again.";
         }
