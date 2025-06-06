@@ -52,6 +52,8 @@ export default {
       localError: "",
       successMessage: "",
       generatedCode: null,
+      submitted: false,
+      completed: false,
     };
   },
   computed: {
@@ -59,6 +61,7 @@ export default {
   },
   methods: {
     async submit() {
+      this.submitted = true;
       this.localError = "";
       this.successMessage = "";
       this.generatedCode = null;
@@ -73,13 +76,10 @@ export default {
           return;
         }
 
-        // Генерируем 6-значный код
         const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
         this.generatedCode = generatedCode;
 
-        // Строим HTML-контент модалки
         const wrapper = document.createElement("div");
-
         const codeText = document.createElement("p");
         codeText.innerHTML = `Your confirmation code: <strong>${generatedCode}</strong>`;
         codeText.style.marginBottom = "15px";
@@ -110,14 +110,9 @@ export default {
 
         if (enteredCode === this.generatedCode) {
           await swal("Success!", "Redirecting to reset page...", "success");
-
-          // Сохраняем email в sessionStorage
           sessionStorage.setItem("reset_email", this.email);
-
-          // Переход без query
+          this.completed = true;
           this.$router.push({ name: "reset-password" });
-
-          // Очищаем email после редиректа
           this.email = "";
         } else {
           this.localError = "Invalid code. Try again.";
@@ -137,6 +132,17 @@ export default {
         }
       }
     }
+  },
+
+  beforeRouteLeave(to, from, next) {
+    if (!this.completed) {
+      this.email = "";
+      this.localError = "";
+      this.successMessage = "";
+      this.generatedCode = null;
+      this.submitted = false;
+    }
+    next();
   }
 };
 </script>

@@ -63,10 +63,12 @@ export default {
       email: "",
       password: "",
       confirmPassword: "",
-      localError: ""
+      localError: "",
+      completed: false,
     };
   },
   created() {
+    this.resetState();
     const savedEmail = sessionStorage.getItem("reset_email");
     if (savedEmail) {
       this.email = savedEmail;
@@ -78,6 +80,13 @@ export default {
     ...mapGetters(["errors"])
   },
   methods: {
+    resetState() {
+      this.email = "";
+      this.password = "";
+      this.confirmPassword = "";
+      this.localError = "";
+      this.completed = false;
+    },
     async submit() {
       if (this.password !== this.confirmPassword) {
         this.localError = "Passwords do not match.";
@@ -91,35 +100,52 @@ export default {
         buttons: false,
       });
 
-      const response = await this.$store.dispatch("resetPassword", {
-        email: this.email,
-        password: this.password
-      });
-
-      if (response === true) {
-        swal({
-          title: "Success!",
-          text: "Password successfully reset!",
-          icon: "success"
-        }).then(() => {
-          if (this.$route.name !== "login") {
-            this.$router.push({ name: "login" }).catch((err) => {
-              if (err.name !== "NavigationDuplicated") throw err;
-            });
-          }
+      try {
+        const response = await this.$store.dispatch("resetPassword", {
+          email: this.email,
+          newPassword: this.password,
         });
-      } else {
-        let errorText = "Something went wrong.";
-        if (response.errors && response.errors.body) {
-          errorText = response.errors.body.join(" ");
+
+        if (response === true) {
+          sessionStorage.removeItem("reset_email");
+          this.completed = true;
+          this.resetState();
+          swal({
+            title: "Success!",
+            text: "Password successfully reset!",
+            icon: "success"
+          }).then(() => {
+            if (this.$route.name !== "login") {
+              this.$router.push({ name: "login" }).catch((err) => {
+                if (err.name !== "NavigationDuplicated") throw err;
+              });
+            }
+          });
+        } else {
+          let errorText = "Something went wrong.";
+          if (response.errors && response.errors.body) {
+            errorText = response.errors.body.join(" ");
+          }
+          swal({
+            title: "Reset failed!",
+            text: errorText,
+            icon: "error"
+          });
         }
+      } catch (err) {
         swal({
           title: "Reset failed!",
-          text: errorText,
+          text: "Unexpected error.",
           icon: "error"
         });
       }
     }
+  },
+  beforeRouteLeave(to, from, next) {
+    if (!this.completed) {
+      this.resetState();
+    }
+    next();
   }
 };
 </script>

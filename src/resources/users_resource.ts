@@ -7,6 +7,7 @@ import ValidationService from "../services/validation_service.ts";
 class RegisterResource extends BaseResource {
   static paths = [
     "/users",
+    "/users/reset-password",
   ];
 
   /**
@@ -18,6 +19,43 @@ class RegisterResource extends BaseResource {
      *         password: string,
      *     }
      */
+  public async PUT() {
+    const email = ValidationService.decodeInput(
+      (this.request.getBodyParam("email") as string) || "",
+    );
+    const newPassword = ValidationService.decodeInput(
+      (this.request.getBodyParam("newPassword") as string) || "",
+    );
+
+    if (!email || !newPassword) {
+      return this.errorResponse(422, "Email and new password are required.");
+    }
+
+    const user = await UserModel.findByEmail(email);
+    if (!user) {
+      return this.errorResponse(422, "User does not exist.");
+    }
+
+    if (!ValidationService.isPasswordStrong(newPassword)) {
+      return this.errorResponse(
+        422,
+        "Password must be 8 characters long and include 1 number, 1 uppercase letter, and 1 lowercase letter.",
+      );
+    }
+
+    user.password = await bcrypt.hash(newPassword);
+    const updated = await user.save();
+
+    if (!updated) {
+      return this.errorResponse(500, "Could not update password.");
+    }
+
+    this.response.body = {
+      message: "Password successfully updated.",
+    };
+    return this.response;
+  }
+
   public async POST() {
     // Gather data
     const username = ValidationService.decodeInput(

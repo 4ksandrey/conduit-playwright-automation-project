@@ -468,6 +468,29 @@ export default {
         });
     });
   },
+
+  resetPassword(context, credentials) {
+    return new Promise((resolve) => {
+      axios
+        .put("/users/reset-password", {
+          email: credentials.email,
+          newPassword: credentials.newPassword,
+        })
+        .then((response) => {
+          console.log("Password reset successful.");
+          console.log(response);
+          resolve(true);
+        })
+        .catch((error) => {
+          console.log("Password reset failed.");
+          resolve(
+            (error.response && error.response.data) || {
+              errors: { body: ["Unknown error"] },
+            }
+          );
+        });
+    });
+  },
 };
 
 function getCookie(cname) {

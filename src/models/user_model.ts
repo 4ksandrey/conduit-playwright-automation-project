@@ -288,6 +288,20 @@ export class UserModel extends BaseModel {
     client.release();
   }
 
+  static async findByEmail(email: string): Promise<UserModel | null> {
+    const results = await BaseModel.Where("users", { email });
+    if (!results.length) return null;
+
+    const row = results[0];
+    const user = new UserModel(
+      row.username as string,
+      row.password as string,
+      row.email as string,
+    );
+    user.id = row.id as number;
+    return user;
+  }
+
   public static async unfollow(followerId: number, followingId: number): Promise<void> {
     const client = await BaseModel.connect();
     await client.query(
