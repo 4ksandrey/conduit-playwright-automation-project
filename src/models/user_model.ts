@@ -117,25 +117,25 @@ export class UserModel extends BaseModel {
    * @param number id=-1
    */
   constructor(
-  username: string,
-  password: string,
-  email: string,
-  bio: string = "",
-  image: string = "https://static.productionready.io/images/smiley-cyrus.jpg",
-  id: number = -1,
-  resetPasswordToken: string | null = null,
-  resetPasswordExpires: Date | null = null,
-) {
-  super();
-  this.id = id;
-  this.username = username;
-  this.password = password;
-  this.email = email;
-  this.bio = bio;
-  this.image = image;
-  this.resetPasswordToken = resetPasswordToken;
-  this.resetPasswordExpires = resetPasswordExpires;
-}
+    username: string,
+    password: string,
+    email: string,
+    bio: string = "",
+    image: string = "https://static.productionready.io/images/smiley-cyrus.jpg",
+    id: number = -1,
+    resetPasswordToken: string | null = null,
+    resetPasswordExpires: Date | null = null,
+  ) {
+    super();
+    this.id = id;
+    this.username = username;
+    this.password = password;
+    this.email = email;
+    this.bio = bio;
+    this.image = image;
+    this.resetPasswordToken = resetPasswordToken;
+    this.resetPasswordExpires = resetPasswordExpires;
+  }
 
 
   //////////////////////////////////////////////////////////////////////////////
@@ -246,7 +246,7 @@ export class UserModel extends BaseModel {
   public async follow(user: UserModel): Promise<void> {
     const client = await BaseModel.connect();
     await client.query(
-      `INSERT INTO follows (follower_id, followee_id) VALUES (?, ?)`,
+      `INSERT INTO follows (follower_id, following_id) VALUES (?, ?)`,
       [this.id, user.id],
     );
     client.release();
@@ -255,7 +255,7 @@ export class UserModel extends BaseModel {
   public async unfollow(user: UserModel): Promise<void> {
     const client = await BaseModel.connect();
     await client.query(
-      `DELETE FROM follows WHERE follower_id = ? AND followee_id = ?`,
+      `DELETE FROM follows WHERE follower_id = ? AND following_id = ?`,
       [this.id, user.id],
     );
     client.release();
@@ -279,14 +279,6 @@ export class UserModel extends BaseModel {
     return false; // будет SQL позже
   }
 
-  public static async follow(followerId: number, followingId: number): Promise<void> {
-    const client = await BaseModel.connect();
-    await client.query(
-      "INSERT INTO followers (follower_id, following_id) VALUES (?, ?);",
-      [followerId, followingId],
-    );
-    client.release();
-  }
 
   static async findByEmail(email: string): Promise<UserModel | null> {
     const results = await BaseModel.Where("users", { email });
@@ -302,24 +294,6 @@ export class UserModel extends BaseModel {
     return user;
   }
 
-  public static async unfollow(followerId: number, followingId: number): Promise<void> {
-    const client = await BaseModel.connect();
-    await client.query(
-      "DELETE FROM followers WHERE follower_id = ? AND following_id = ?;",
-      [followerId, followingId],
-    );
-    client.release();
-  }
-
-  public static async isFollowing(followerId: number, followingId: number): Promise<boolean> {
-    const client = await BaseModel.connect();
-    const result = await client.query(
-      "SELECT * FROM followers WHERE follower_id = ? AND following_id = ?;",
-      [followerId, followingId],
-    );
-    client.release();
-    return result.rowCount !== undefined && result.rowCount > 0;
-  }
   //////////////////////////////////////////////////////////////////////////////
   // FILE MARKER - METHODS - STATIC ////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
